@@ -1,0 +1,25 @@
+name = "EnergyAgentEnvironments"
+uuid = "648f5313-62c6-43ee-8010-c7c816bb980d"
+authors = ["Rico Schrage"]
+repo = "https://github.com/Digitalized-Energy-Systems/EnergyAgentEnvironments.jl"
+version = "0.1.0"
+
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Mango = "5e49fdec-d473-4d14-b295-7bff2fcf1925"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+
+[compat]
+Dates = "1.11.0"
+Mango = "^0.4"
+PyCall = "1.96.4"
+Revise = "3.6.4"
+julia = "^1.9"
+
+[extras]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test", "Documenter"]
