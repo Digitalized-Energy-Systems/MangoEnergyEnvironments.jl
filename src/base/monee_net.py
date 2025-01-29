@@ -10,6 +10,8 @@ import networkx as nx
 def edge_centrality(net):
     return nx.edge_betweenness_centrality(net.graph)
 
+def connected_components(net):
+    return list(nx.connected_components(net.graph))
 
 def create_four_line_example():
     pn = Network(PowerGrid(name="power", sn_mva=1))
