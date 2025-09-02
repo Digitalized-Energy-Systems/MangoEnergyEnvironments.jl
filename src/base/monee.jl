@@ -1,4 +1,4 @@
-export fetch_monee_net, fetch_example_net, nx_edge_centrality, connected_components, energyflow, upper
+export fetch_monee_net, fetch_example_net, nx_edge_centrality, connected_components, energyflow, upper, solve_load_shedding_optimization, calc_general_resilience_performance
 
 using PyCall
 
@@ -32,4 +32,14 @@ end
 
 function fetch_example_net()
     return fetch_monee_net("example")
+end
+
+function solve_load_shedding_optimization(net)
+    monee = pyimport("monee")
+    monee.solve_load_shedding_problem(net, (0.9, 1.1), (0.9, 1.1), (0.9, 1.1), (-0.01, 0.01), (-0.01, 0.01))
+end
+
+function calc_general_resilience_performance(net)
+    monee = pyimport("monee")
+    monee.problem.calc_general_resilience_performance(net)
 end
