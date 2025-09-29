@@ -1,14 +1,17 @@
 export Failure,
 NodeFailureEvent,
 BranchFailureEvent,
+CustomFailureEvent,
 RestorationEnvironmentBehavior,
 schedule_failure,
 topology_based_on_grid,
 topology_based_on_grid_groups,
 on_node_failure,
 on_branch_failure,
+on_custom_failure,
 create_branch_aid,
-results
+results,
+apply_failures
 
 using Dates
 using Mango
@@ -18,6 +21,8 @@ using PyCall
     delay_s::Real
     branch_ids::Vector{Tuple} = Vector()
     node_ids::Vector{Int} = Vector()
+    custom::Union{Function,Nothing} = nothing
+    custom_id::Union{Int,Nothing} = nothing
 end
 
 struct BranchFailureEvent
@@ -26,6 +31,9 @@ end
 struct NodeFailureEvent
     node_id::Int
 end
+struct CustomFailureEvent
+    custom_id::Any
+end
 
 @kwdef mutable struct RestorationEnvironmentBehavior <: Behavior
     net::PyObject
@@ -33,6 +41,7 @@ end
     failures::Vector{Failure} = Vector()
     on_branch_failure::Function = (branch_id) -> nothing
     on_node_failure::Function = (node_id) -> nothing
+    on_custom_failure::Function = (custom_id) -> nothing
     dirty::Bool = false
 end
 
@@ -41,8 +50,6 @@ function Mango.on_step(behavior::RestorationEnvironmentBehavior, env::DefaultEnv
         @debug"Energyflow executed $(clock.simulation_time) + $(time_step_s)"
         behavior.net_results = energyflow(behavior.net)
         env_net = results(behavior).network
-        @info env_net.child_by_id(1).model.p_mw.value
-        @info env_net.child_by_id(1).model.p_mw.value
         behavior.dirty = false
     end
 end
@@ -120,9 +127,27 @@ function on_branch_failure(f::Function, behavior::RestorationEnvironmentBehavior
     behavior.on_branch_failure = f
 end
 
+function on_custom_failure(f::Function, behavior::RestorationEnvironmentBehavior)
+    behavior.on_custom_failure = f
+end
+
 failures(behavior::RestorationEnvironmentBehavior) = behavior.failures
 net(behavior::RestorationEnvironmentBehavior) = behavior.net
 results(behavior::RestorationEnvironmentBehavior) = behavior.net_results
+
+function apply_failures(net, failures::Vector{Failure})
+    for failure in failures
+        for (branch_id, nid) in failure.branch_ids            
+            net.branch_by_id(branch_id).active = false
+        end
+        for node_id in failure.node_ids
+            net.node_by_id(node_id).active = false
+        end
+        if !isnothing(failure.custom)
+            failure.custom(net)
+        end
+    end
+end
 
 function on_failure(behavior::RestorationEnvironmentBehavior, env::Environment, failures::Vector{Failure})
     for failure in failures
@@ -141,6 +166,14 @@ function on_failure(behavior::RestorationEnvironmentBehavior, env::Environment, 
             behavior.on_node_failure(node_id)
             @info "Emit global event $node_id"
             emit_global_event(env, NodeFailureEvent(node_id))
+        end
+        if !isnothing(failure.custom)
+            failure.custom(net(behavior))
+
+            behavior.dirty = true
+            behavior.on_custom_failure(failure.custom_id)
+            @info "Emit global child event $(failure.custom_id)"
+            emit_global_event(env, CustomFailureEvent(failure.custom_id))
         end
     end
 end
@@ -188,7 +221,7 @@ function topology_based_on_grid(monee_net::PyObject, topology::Topology, world::
         if !include_cps && branch.model.is_cp()
             continue
         end
-        state = branch.active ? Mango.NORMAL : Mango.INACTIVE
+        state = branch.active && branch.model.on_off == 1 ? Mango.NORMAL : Mango.INACTIVE # not active = not working, on_off = controllable state
         add_edge!(topology, branch.from_node_id, branch.to_node_id, state)
     end
 end
@@ -251,8 +284,16 @@ function _topology_based_grid_groups_by_sector(components,
         end
         added_node_id = []
         for (id, agent_ids) in id_list
+            if length(agent_ids) == 0
+                continue
+            end
             agents = [world[aid] for aid in agent_ids]
-            add_node!(topology, agents..., id=id)
+            nid = add_node!(topology, agents..., id=id)
+            
+            if length(added_node_id) == 0
+                set_characteristic!(topology, nid, agents[1], :leader)
+            end
+            
             push!(added_node_id, id)
             for other_id in added_node_id
                 if id != other_id
