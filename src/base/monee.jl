@@ -42,8 +42,8 @@ function solve_load_shedding_optimization(net;
     bound_vm=(0.9, 1.1), 
     bound_t=(0.95, 1.05), 
     bound_pressure=(0.9, 1.1), 
-    ext_el_grid_bound=(0.0, 10), 
-    ext_gas_grid_bound=(0.0, 10))
+    ext_el_grid_bound=(-0.0, 1), 
+    ext_gas_grid_bound=(-0.0, 1))
     
     monee = pyimport("monee")
     monee.solve_load_shedding_problem(net, bound_vm, 
