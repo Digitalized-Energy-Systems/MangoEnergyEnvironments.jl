@@ -1,4 +1,6 @@
-export fetch_cigre_net, fetch_monee_net, fetch_example_net, nx_edge_centrality, connected_components, energyflow, upper, solve_load_shedding_optimization, calc_general_resilience_performance, py_print
+export fetch_cigre_net, fetch_monee_net, fetch_example_net, nx_edge_centrality, connected_components, 
+    energyflow, upper, solve_load_shedding_optimization, calc_general_resilience_performance, py_print,
+    solve_load_shedding_optimization_relaxed
 
 using PyCall
 
@@ -41,7 +43,7 @@ end
 function solve_load_shedding_optimization(net; 
     bound_vm=(0.9, 1.1), 
     bound_t=(0.95, 1.05), 
-    bound_pressure=(0.9, 1.1), 
+    bound_pressure=(0.9, 2), 
     ext_el_grid_bound=(-0.0, 1), 
     ext_gas_grid_bound=(-0.0, 1))
     
@@ -51,6 +53,17 @@ function solve_load_shedding_optimization(net;
         bound_pressure, 
         ext_el_grid_bound, 
         ext_gas_grid_bound)
+end
+
+function solve_load_shedding_optimization_relaxed(net)
+    monee = pyimport("monee")
+    monee.solve_load_shedding_problem(net, 
+        (0,2),
+        (0,2),
+        (0,2),
+        (0,10),
+        (0,10)
+    )
 end
 
 function calc_general_resilience_performance(net)

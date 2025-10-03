@@ -21,24 +21,14 @@ def connected_components(net):
 def create_monee_bench():
     return mes.create_monee_benchmark_net()
 
-def create_cigre():
-    random.seed(9002)
-    pnet = pn.create_cigre_network_mv(with_der="pv_wind")
-
-    monee_net = from_pandapower_net(pnet)
-    new_mes = monee_net.copy()
-    bus_to_gas_junc = mes.create_gas_net_for_power(monee_net, new_mes, 1, scaling=1)
-    bus_index_to_junction_index, bus_index_to_end_junction_index = (
-        mes.create_heat_net_for_power(monee_net, new_mes, 1)
-    )
-    return new_mes
+def create_mv_multi_cigre():
+    return mes.create_mv_multi_cigre()
 
 def create_monee_net(network_name):
     if network_name == "monee":
         return create_monee_bench()
     if network_name == "cigre":
-        return create_cigre()
-
+        return create_mv_multi_cigre()
 
 if __name__ == "__main__":
     # mn = create_monee_net("monee")
