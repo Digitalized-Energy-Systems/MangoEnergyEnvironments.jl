@@ -58,11 +58,12 @@ end
 function solve_load_shedding_optimization_relaxed(net)
     monee = pyimport("monee")
     monee.solve_load_shedding_problem(net, 
-        (0,2),
-        (0,2),
-        (0,2),
+        (0.5,1.5),
+        (0.5,1.5),
+        (0.5,1.5),
         (0,10),
-        (0,10)
+        (0,10),
+        use_ext_grid_bounds=false,
     )
 end
 
