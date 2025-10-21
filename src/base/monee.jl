@@ -50,7 +50,7 @@ function solve_load_shedding_optimization(net;
     monee = pyimport("monee")
     monee.solve_load_shedding_problem(net, bound_vm, 
         bound_t, 
-        bound_pressure, 
+        bound_pressure,
         ext_el_grid_bound, 
         ext_gas_grid_bound)
 end
