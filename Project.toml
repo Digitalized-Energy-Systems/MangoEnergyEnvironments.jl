@@ -1,7 +1,7 @@
-name = "EnergyAgentEnvironments"
+name = "MangoEnergyEnvironments"
 uuid = "648f5313-62c6-43ee-8010-c7c816bb980d"
 authors = ["Rico Schrage"]
-repo = "https://github.com/Digitalized-Energy-Systems/EnergyAgentEnvironments.jl"
+repo = "https://github.com/Digitalized-Energy-Systems/MangoEnergyEnvironments.jl"
 version = "0.1.0"
 
 [deps]

@@ -1,4 +1,4 @@
-# Code of Conduct - EnergyAgentEnvironments.jl
+# Code of Conduct - MangoEnergyEnvironments.jl
 
 ## Our Pledge
 

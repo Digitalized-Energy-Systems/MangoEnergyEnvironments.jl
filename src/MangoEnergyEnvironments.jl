@@ -1,5 +1,5 @@
 
-module EnergyAgentEnvironments
+module MangoEnergyEnvironments
 
 include("util/data_structure.jl")
 include("base/monee.jl")
