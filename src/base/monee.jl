@@ -4,9 +4,6 @@ export fetch_cigre_net, fetch_monee_net, fetch_example_net, nx_edge_centrality, 
 
 using PyCall
 
-C_DIR = @__DIR__
-PY_NETWORK = C_DIR * "/monee_net.py"
-
 function energyflow(monee_net::PyObject)
     monee = pyimport("monee")
     return monee.run_energy_flow(monee_net)
@@ -17,27 +14,41 @@ function upper(value)
     return monee.model.upper(value)
 end
 
-function nx_edge_centrality(monee_net::PyObject)
-    @pyinclude(PY_NETWORK)
-    return py"edge_centrality"(monee_net)
+function edge_centrality(net)
+    nx = pyimport("networkx")
+    return nx.edge_betweenness_centrality(net.graph)
 end
 
-function connected_components(monee_net::PyObject)
-    @pyinclude(PY_NETWORK)
-    return py"connected_components"(monee_net)
+function connected_components(net)
+    nx = pyimport("networkx")
+    return list(nx.connected_components(net.graph))
 end
 
-function fetch_monee_net(network_name::String)
-    @pyinclude(PY_NETWORK)
-    return py"create_monee_net"(network_name)
+function create_monee_bench()
+    mes = pyimport("monee.network.mes")
+    return mes.create_monee_benchmark_net()
+end
+
+function create_mv_multi_cigre()
+    mes = pyimport("monee.network.mes")
+    return mes.create_mv_multi_cigre()
+end
+
+function create_monee_net(network_name)
+    if network_name == "monee"
+        return create_monee_bench()
+    end
+    if network_name == "cigre"
+        return create_mv_multi_cigre()
+    end
 end
 
 function fetch_example_net()
-    return fetch_monee_net("monee")
+    return create_monee_net("monee")
 end
 
 function fetch_cigre_net()
-    return fetch_monee_net("cigre")
+    return create_monee_net("cigre")
 end
 
 function solve_load_shedding_optimization(net; 
@@ -73,7 +84,7 @@ function calc_general_resilience_performance(net)
 end
 
 function py_print(data)
-    py"print"(data)
+    pyprint(data)
 end
 
 function enable_poisson_com_for_monee(world, monee_net; base_delay_per_message=20)
