@@ -29,7 +29,9 @@ end
         role.counter += 1
 
         # inform neighbors about the failure
-        send_messages(role, "Failure attention!", topology_neighbors(role))
+        for n in topology_neighbors(role)
+            send_message(role, "Failure attention!", n)
+        end
     end
     behavior_in(world, on_message=String, role_types=BranchFailureHandler) do role, msg,_
         # just count the messages received
