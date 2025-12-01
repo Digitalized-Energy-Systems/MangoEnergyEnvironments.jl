@@ -54,7 +54,7 @@ function Mango.on_step(behavior::RestorationEnvironmentBehavior, env::DefaultEnv
     end
 end
 
-function Mango.initialize(behavior::RestorationEnvironmentBehavior)
+function Mango.initialize(behavior::RestorationEnvironmentBehavior, env::Environment, clock::Clock)
     @debug "Energyflow initialized"
     behavior.net_results = energyflow(behavior.net)
 end
