@@ -1,24 +1,32 @@
-export PowerSystemsBehavior, calculate_initial_time, get_possible_components
+export PowerSystemsBehavior, calculate_initial_time, get_possible_components, get_components_by_type, PowerUpdateInfo
 
 using Mango
 using PowerSystems
 using UUIDs
 using PowerSystems.InfrastructureSystems: get_initial_timestamp
 using Dates
+using PowerSystems.InfrastructureSystems: get_uuid
+
+struct PowerUpdateInfo end
 
 @kwdef mutable struct PowerSystemsBehavior <: Behavior
     system::System
     relevant_components::Vector{DataType}
 end
 
-function get_possible_components(behavior::PowerSystemsBehavior)
+function get_components_by_type(behavior::PowerSystemsBehavior, types::Vector{DataType})
     nodes = []
     for c in iterate_components(behavior.system)
-        if typeof(c) in behavior.relevant_components
+        if typeof(c) in types
             push!(nodes, c)
         end
     end
+    
     return nodes
+end
+
+function get_possible_components(behavior::PowerSystemsBehavior)
+    return get_components_by_type(behavior, behavior.relevant_components)
 end
 
 function Mango.initialize(behavior::PowerSystemsBehavior, env::Environment, clock::Clock)
@@ -43,11 +51,13 @@ function Mango.initialize(behavior::PowerSystemsBehavior, env::Environment, cloc
                     own_data = date_to_value
                     own_component = c
                     value_to_set = own_data[date]
-                    if typeof(c) == RenewableDispatch
+                    if typeof(own_component) == RenewableDispatch
                         set_rating!(own_component, value_to_set)
                     else
                         set_max_active_power!(own_component, value_to_set)
                     end
+                    # notify agent of update
+                    emit_agent_event(env, PowerUpdateInfo(), get_uuid(own_component))
                 end
             end
         end
@@ -55,10 +65,17 @@ function Mango.initialize(behavior::PowerSystemsBehavior, env::Environment, cloc
 end
 
 function Mango.install(behavior::PowerSystemsBehavior, agent::Agent; id::UUID, type::Symbol)
-    device = get_component(type, id)
+    device = get_component(behavior.system, id)
+    type = typeof(device)
     
-    install_observer(agent) do 
-        return Dict(f => getfield(t, f) for f in fieldnames(type))
+    install_observer(agent, :statics) do 
+        return Dict(f => getfield(device, f) for f in fieldnames(type))
+    end
+    install_observer(agent, :max_active_power) do 
+        return get_max_active_power(device)
+    end
+    install_observer(agent, :active_power) do 
+        return get_active_power(device)
     end
 
     if type == ThermalStandard || type == RenewableDispatch || type == EnergyReservoirStorage

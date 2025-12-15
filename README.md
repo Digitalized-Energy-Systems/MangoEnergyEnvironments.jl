@@ -4,7 +4,8 @@
 # Mango Energy Environments
 
 This package contains environments for Mango.jl from the energy domain. Currently there are the following environments:
-* A Multi-Energy Restoration Environment (based on monee)
+* A multi-energy restoration environment (based on monee)
+* A scheduling/economic dispatch environment integrating parts of PowerSystems.jl
 
 ## Concept
 

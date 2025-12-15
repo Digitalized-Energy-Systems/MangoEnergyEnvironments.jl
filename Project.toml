@@ -1,11 +1,12 @@
 name = "MangoEnergyEnvironments"
 uuid = "648f5313-62c6-43ee-8010-c7c816bb980d"
+version = "0.1.0"
 authors = ["Rico Schrage"]
 repo = "https://github.com/Digitalized-Energy-Systems/MangoEnergyEnvironments.jl"
-version = "0.1.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+InfrastructureSystems = "2cd47ed4-ca9b-11e9-27f2-ab636a7671f1"
 Mango = "5e49fdec-d473-4d14-b295-7bff2fcf1925"
 PowerSimulations = "e690365d-45e2-57bb-ac84-44ba829e73c4"
 PowerSystemCaseBuilder = "f00506e0-b84f-492a-93c2-c0a9afc4364e"
@@ -14,7 +15,11 @@ PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
+[sources]
+Mango = {path = "../Mango.jl"}
+
 [compat]
+InfrastructureSystems = "2.6.0"
 Mango = "^0.5"
 PowerSimulations = "0.30.2"
 PowerSystemCaseBuilder = "1.3.11"
